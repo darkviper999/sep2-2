@@ -85,7 +85,7 @@ class MainWindow(QMainWindow):
         button.clicked.connect(self.scribbleArea.clearImage)
         self.resize(500, 500)
 
-if _name_ == '_main_':
+if __name__ == '__main__':
     app = QApplication(sys.argv)
     window = MainWindow()
     window.show()
