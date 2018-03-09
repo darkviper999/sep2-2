@@ -16,23 +16,26 @@ class ScribbleArea(QWidget):
         self.image = QImage()
         self.lastPoint = QPoint()
 
-    def paintEvent(self, event):
-        painter = QPainter(self)
-        dirtyRect = event.rect()
-        painter.drawImage(dirtyRect, self.image, dirtyRect)
+    def resizeEvent(self, event):
+        if self.width() > self.image.width() or self.height() > self.image.height():
+            newWidth = max(self.width() + 128, self.image.width())
+            newHeight = max(self.height() + 128, self.image.height())
+            self.resizeImage(self.image, QSize(newWidth, newHeight))
+            self.update()
 
-    def drawLineTo(self, endPoint):
-        painter = QPainter(self.image)
-        painter.setPen(QPen(self.myPenColor, self.myPenWidth, Qt.SolidLine,
-                Qt.RoundCap, Qt.RoundJoin))
-        painter.drawLine(self.lastPoint, endPoint)
-        self.modified = True
+        super(ScribbleArea, self).resizeEvent(event)
 
-        rad = self.myPenWidth / 2 + 2
-        self.update(QRect(self.lastPoint, endPoint).normalized().adjusted(-rad, -rad, +rad, +rad))
-        self.lastPoint = QPoint(endPoint)
+    def resizeImage(self, image, newSize):
+        if image.size() == newSize:
+            return
 
-class MainWindow(QMainWindow):
+        newImage = QImage(newSize, QImage.Format_RGB32)
+        newImage.fill(qRgb(255, 255, 255))
+        painter = QPainter(newImage)
+        painter.drawImage(QPoint(0, 0), image)
+        self.image = newImage
+
+    class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
 
@@ -41,14 +44,3 @@ class MainWindow(QMainWindow):
         self.scribbleArea = ScribbleArea()
         self.setCentralWidget(self.scribbleArea)
 
-
-        self.setWindowTitle("Paint Program")
-        button = QPushButton("Clear", self.scribbleArea)
-        button.clicked.connect(self.scribbleArea.clearImage)
-        self.resize(500, 500)
-
-if _name_ == '_main_':
-    app = QApplication(sys.argv)
-    window = MainWindow()
-    window.show()
-    sys.exit(app.exec_())
