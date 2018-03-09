@@ -16,6 +16,20 @@ class ScribbleArea(QWidget):
         self.image = QImage()
         self.lastPoint = QPoint()
 
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            self.lastPoint = event.pos()
+            self.scribbling = True
+
+    def mouseMoveEvent(self, event):
+        if (event.buttons() & Qt.LeftButton) and self.scribbling:
+            self.drawLineTo(event.pos())
+
+    def mouseReleaseEvent(self, event):
+        if event.button() == Qt.LeftButton and self.scribbling:
+            self.drawLineTo(event.pos())
+            self.scribbling = False
+
     def paintEvent(self, event):
         painter = QPainter(self)
         dirtyRect = event.rect()
