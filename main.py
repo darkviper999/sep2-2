@@ -16,7 +16,11 @@ class ScribbleArea(QWidget):
         self.image = QImage()
         self.lastPoint = QPoint()
 
-<<<<<<< HEAD
+    def clearImage(self):
+        self.image.fill(qRgb(255, 255, 255))
+        self.modified = True
+        self.update()
+
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
             self.lastPoint = event.pos()
@@ -36,6 +40,15 @@ class ScribbleArea(QWidget):
         dirtyRect = event.rect()
         painter.drawImage(dirtyRect, self.image, dirtyRect)
 
+    def resizeEvent(self, event):
+        if self.width() > self.image.width() or self.height() > self.image.height():
+            newWidth = max(self.width() + 128, self.image.width())
+            newHeight = max(self.height() + 128, self.image.height())
+            self.resizeImage(self.image, QSize(newWidth, newHeight))
+            self.update()
+
+        super(ScribbleArea, self).resizeEvent(event)
+
     def drawLineTo(self, endPoint):
         painter = QPainter(self.image)
         painter.setPen(QPen(self.myPenColor, self.myPenWidth, Qt.SolidLine,
@@ -47,22 +60,6 @@ class ScribbleArea(QWidget):
         self.update(QRect(self.lastPoint, endPoint).normalized().adjusted(-rad, -rad, +rad, +rad))
         self.lastPoint = QPoint(endPoint)
 
-    def clearImage(self):
-        self.image.fill(qRgb(255, 255, 255))
-        self.modified = True
-        self.update()
-
-class MainWindow(QMainWindow):
-=======
-    def resizeEvent(self, event):
-        if self.width() > self.image.width() or self.height() > self.image.height():
-            newWidth = max(self.width() + 128, self.image.width())
-            newHeight = max(self.height() + 128, self.image.height())
-            self.resizeImage(self.image, QSize(newWidth, newHeight))
-            self.update()
-
-        super(ScribbleArea, self).resizeEvent(event)
-
     def resizeImage(self, image, newSize):
         if image.size() == newSize:
             return
@@ -73,8 +70,7 @@ class MainWindow(QMainWindow):
         painter.drawImage(QPoint(0, 0), image)
         self.image = newImage
 
-    class MainWindow(QMainWindow):
->>>>>>> resize
+class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
 
@@ -83,3 +79,14 @@ class MainWindow(QMainWindow):
         self.scribbleArea = ScribbleArea()
         self.setCentralWidget(self.scribbleArea)
 
+
+        self.setWindowTitle("Paint Program")
+        button = QPushButton("Clear", self.scribbleArea)
+        button.clicked.connect(self.scribbleArea.clearImage)
+        self.resize(500, 500)
+
+if _name_ == '_main_':
+    app = QApplication(sys.argv)
+    window = MainWindow()
+    window.show()
+    sys.exit(app.exec_())
