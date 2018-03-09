@@ -46,6 +46,11 @@ class ScribbleArea(QWidget):
         self.update(QRect(self.lastPoint, endPoint).normalized().adjusted(-rad, -rad, +rad, +rad))
         self.lastPoint = QPoint(endPoint)
 
+    def clearImage(self):
+        self.image.fill(qRgb(255, 255, 255))
+        self.modified = True
+        self.update()
+
 class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
